@@ -1,9 +1,9 @@
-const albumService = require('../services/albums');
+const albumsService = require('../services/albums');
 
 exports.getAlbums = async (req, res, next) => {
   try {
-    const albumsRequest = await albumService.getAlbums();
-    res.send(albumsRequest);
+    const albums = await albumsService.getAlbums();
+    res.send(albums);
   } catch (error) {
     next(error);
   }
@@ -11,8 +11,8 @@ exports.getAlbums = async (req, res, next) => {
 
 exports.getPictures = async (req, res, next) => {
   try {
-    const picturesRequest = await albumService.getPictures(req);
-    res.send(picturesRequest);
+    const pictures = await albumsService.getPictures(req);
+    res.send(pictures);
   } catch (error) {
     next(error);
   }
