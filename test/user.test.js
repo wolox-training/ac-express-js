@@ -1,4 +1,5 @@
 const request = require('supertest');
+const dictum = require('dictum.js');
 
 const app = require('../app');
 
@@ -117,7 +118,10 @@ describe('/users POST', () => {
         password: '1234asdf65asd'
       })
       .expect(200)
-      .then(response => expect(response.ok).toBe(true)));
+      .then(response => {
+        expect(response.ok).toBe(true);
+        dictum.chai(response);
+      }));
 
   it('test 11 : should be fail sign up a user because email must be unique', () =>
     request(app)
