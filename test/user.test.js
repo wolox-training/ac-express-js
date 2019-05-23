@@ -108,7 +108,31 @@ describe('/users POST', () => {
       .expect(400)
       .then(response => expect(response.body.message).toMatch(/name/)));
 
-  it('test 10 : should be success sign up a user because all params are ok', () =>
+  it('test 10 : should be fail sign up a user because there firstName is empty', () =>
+    request(app)
+      .post('/users')
+      .send({
+        firstName: '',
+        lastName: 'Perez',
+        email: 'juan4@wolox.com.ar',
+        password: '12312asasasd'
+      })
+      .expect(400)
+      .then(response => expect(response.body.message).toMatch(/name/)));
+
+  it('test 11 : should be fail sign up a user because there lastName is empty', () =>
+    request(app)
+      .post('/users')
+      .send({
+        firstName: 'Juan',
+        lastName: '',
+        email: 'juan5@wolox.com.ar',
+        password: '123654654asd'
+      })
+      .expect(400)
+      .then(response => expect(response.body.message).toMatch(/name/)));
+
+  it('test 12 : should be success sign up a user because all params are ok', () =>
     request(app)
       .post('/users')
       .send({
@@ -123,7 +147,7 @@ describe('/users POST', () => {
         dictum.chai(response);
       }));
 
-  it('test 11 : should be fail sign up a user because email must be unique', () =>
+  it('test 13 : should be fail sign up a user because email must be unique', () =>
     request(app)
       .post('/users')
       .send({
