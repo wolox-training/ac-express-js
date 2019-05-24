@@ -13,7 +13,7 @@ exports.validate = {
       res.status(200);
     } catch (err) {
       const map = err.array();
-      console.log(map);
+      // console.log(map);
       res.status(400).send({ message: map[0].msg });
     }
   }
