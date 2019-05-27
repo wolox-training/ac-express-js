@@ -19,11 +19,7 @@ exports.signIn = async (req, res, next) => {
   try {
     const findUserToken = await usersService.find(req.body);
     if (findUserToken) {
-      res.json({
-        success: true,
-        message: 'Authentication successful!',
-        token: findUserToken
-      });
+      res.send({ token: findUserToken });
     } else {
       res.status(400).send({ message: 'User or password incorrect' });
     }

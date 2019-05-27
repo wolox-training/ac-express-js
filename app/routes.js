@@ -13,7 +13,11 @@ exports.init = app => {
     [validationSignIn.signInValidation, validation.validate.validations],
     users.signIn
   );
-  app.get('/users', [validationToken.tokenIsValid, validation.validate.validations], users.list);
+  app.get(
+    '/users',
+    [validationToken.tokenIsValid, validation.validate.validations, validationToken.headers],
+    users.list
+  );
   // app.get('/endpoint/get/path', [], controller.methodGET);
   // app.put('/endpoint/put/path', [], controller.methodPUT);
   // app.post('/endpoint/post/path', [], controller.methodPOST);

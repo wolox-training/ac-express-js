@@ -19,15 +19,14 @@ describe('GET /users', () => {
             email: 'juan11@wolox.com.ar',
             password: '1234asdf65asd'
           })
-          .then(() => {
+          .then(() =>
             request(app)
               .get('/users?limit=23')
-              .send({
-                token: '5456454'
-              })
+              .set('Authorization', '654654654654')
+              .send({})
               .expect(400)
-              .then(response => expect(response.body.message).toMatch(/Bad Token/));
-          })
+              .then(response => expect(response.text).toMatch(/Bad Token/))
+          )
       ));
 
   it('test 02 : should be fail because token field is empty', () =>
@@ -46,13 +45,40 @@ describe('GET /users', () => {
             email: 'juan123@wolox.com.ar',
             password: '1234asdf65asd'
           })
-          .then(() => {
+          .then(() =>
             request(app)
               .get('/users?limit=23')
+              .set('Authorization', ' ')
               .send({})
               .expect(400)
-              .then(response => expect(response.body.message).toMatch(/Authorized/));
+              .then(response => expect(response.text).toMatch(/Authorized/))
+          )
+      ));
+
+  it('test 02 : should be fail because token field has less than 22 characters', () =>
+    request(app)
+      .post('/users')
+      .send({
+        firstName: 'Juan',
+        lastName: 'Perez',
+        email: 'juan1asdasd23@wolox.com.ar',
+        password: '1234asdf65asd'
+      })
+      .then(() =>
+        request(app)
+          .post('/users/sessions')
+          .send({
+            email: 'juan1asdasd23@wolox.com.ar',
+            password: '1234asdf65asd'
           })
+          .then(() =>
+            request(app)
+              .get('/users?limit=23')
+              .set('Authorization', '565')
+              .send({})
+              .expect(400)
+              .then(response => expect(response.text).toMatch(/Bad Token/))
+          )
       ));
 
   it('test 03 : should be success because token is correct', () =>
@@ -74,9 +100,8 @@ describe('GET /users', () => {
           .then(response =>
             request(app)
               .get('/users?limit=23')
-              .send({
-                token: response.body.token
-              })
+              .set('Authorization', response.body.token)
+              .send({})
               .expect(200)
               .then(res => expect(res.body).toHaveLength(1))
           )
@@ -110,6 +135,7 @@ describe('GET /users', () => {
               .then(response =>
                 request(app)
                   .get('/users?limit=2')
+                  .set('Authorization', response.body.token)
                   .send({
                     token: response.body.token
                   })
@@ -147,9 +173,8 @@ describe('GET /users', () => {
               .then(response =>
                 request(app)
                   .get('/users?limit=1')
-                  .send({
-                    token: response.body.token
-                  })
+                  .set('Authorization', response.body.token)
+                  .send({})
                   .expect(200)
                   .then(res => expect(res.body).toHaveLength(1))
               )
@@ -175,9 +200,8 @@ describe('GET /users', () => {
           .then(response =>
             request(app)
               .get('/users')
-              .send({
-                token: response.body.token
-              })
+              .set('Authorization', response.body.token)
+              .send({})
               .expect(400)
               .then(res => expect(res.body.message).toMatch(/pagination is empty/))
           )
@@ -202,9 +226,8 @@ describe('GET /users', () => {
           .then(response =>
             request(app)
               .get('/users?limit=0')
-              .send({
-                token: response.body.token
-              })
+              .set('Authorization', response.body.token)
+              .send({})
               .expect(400)
               .then(res => expect(res.body.message).toMatch(/can not be 0/))
           )
@@ -229,9 +252,8 @@ describe('GET /users', () => {
           .then(response =>
             request(app)
               .get('/users?limit=')
-              .send({
-                token: response.body.token
-              })
+              .set('Authorization', response.body.token)
+              .send({})
               .expect(400)
               .then(res => expect(res.body.message).toMatch(/number of pages/))
           )

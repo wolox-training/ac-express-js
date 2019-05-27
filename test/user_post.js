@@ -276,6 +276,6 @@ describe('/users/sessions POST', () => {
             password: '1234asdf65asd'
           })
           .expect(200)
-          .then(response => expect(response.body.message).toMatch(/successful/))
+          .then(response => expect(response.body.token.length).toBeGreaterThanOrEqual(22))
       ));
 });
