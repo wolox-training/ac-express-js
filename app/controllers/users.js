@@ -15,15 +15,29 @@ exports.register = async (req, res, next) => {
   }
 };
 
-exports.signIn = async (req, res) => {
-  const findUserToken = await usersService.find(req.body);
-  if (findUserToken === null) {
-    res.status(400).send({ message: 'User or password incorrect' });
-  } else {
-    res.json({
-      success: true,
-      message: 'Authentication successful!',
-      token: findUserToken
-    });
+exports.signIn = async (req, res, next) => {
+  try {
+    const findUserToken = await usersService.find(req.body);
+    if (findUserToken) {
+      res.json({
+        success: true,
+        message: 'Authentication successful!',
+        token: findUserToken
+      });
+    } else {
+      res.status(400).send({ message: 'User or password incorrect' });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.list = async (req, res, next) => {
+  try {
+    const pages = req.query.limit;
+    const listUsers = await usersService.list(pages);
+    res.json(listUsers);
+  } catch (error) {
+    next(error);
   }
 };

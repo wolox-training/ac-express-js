@@ -28,3 +28,11 @@ exports.find = user =>
       return null;
     })
     .catch(errors.databaseError);
+
+exports.list = pages =>
+  User.findAll({
+    attributes: ['firstName', 'lastName', 'email'],
+    limit: pages
+  })
+    .then(response => response)
+    .catch(errors.databaseError);
