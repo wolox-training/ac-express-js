@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const { query } = require('express-validator/check');
 
-exports.tokenIsValid = [
+exports.pagination = [
   query('limit')
     .exists()
     .withMessage('Limit of pagination is empty.')
