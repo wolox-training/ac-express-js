@@ -2,10 +2,15 @@ const fetch = require('node-fetch');
 
 const errors = require('../errors');
 
-exports.getAlbums = () =>
-  fetch(`${process.env.API}albums/`)
+exports.getAlbums = req => {
+  let endpoint = 'albums';
+  if (req.id) {
+    endpoint = `albums/?id=${req.id}`;
+  }
+  return fetch(`${process.env.API}${endpoint}`)
     .then(response => response.json())
     .catch(errors.defaultError);
+};
 
 exports.getPictures = req => {
   if (req.query.albumId) {

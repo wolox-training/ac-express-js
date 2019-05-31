@@ -1,3 +1,5 @@
+// const Purchase = require('.').purchases;
+
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'users',
@@ -25,7 +27,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN
       }
     },
-    { timestamps: false }
+    {
+      timestamps: false,
+      classMethods: {
+        associate: models => {
+          User.hasMany(models.purchases);
+        }
+      }
+    }
   );
+  sequelize.sync();
   return User;
 };

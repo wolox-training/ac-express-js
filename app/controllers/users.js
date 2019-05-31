@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 
 const usersService = require('../services/users');
+const albumsService = require('../services/albums');
 const logger = require('../logger');
 
 exports.register = async (req, res, next) => {
@@ -49,6 +50,27 @@ exports.registerAdmin = async (req, res, next) => {
     body.password = hash;
     await usersService.registerAdmin(body);
     res.status(201).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.buyAlbum = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const albumId = req.params;
+    const album = await albumsService.getAlbums(albumId);
+    const purchasedAlbum = {
+      albumId: album[0].id,
+      title: album[0].title,
+      id: userId
+    };
+    const newPurchase = await usersService.buyAlbum(purchasedAlbum);
+    if (newPurchase) {
+      res.status(200).send(newPurchase);
+    } else {
+      res.status(404).send();
+    }
   } catch (err) {
     next(err);
   }

@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 
 const errors = require('../errors');
 const User = require('../models').users;
+const Purchase = require('../models').purchases;
 
 exports.register = user => User.create(user).catch(errors.databaseError);
 
@@ -14,6 +15,7 @@ exports.findAndReturnToken = user =>
         if (match) {
           const token = jwt.sign(
             {
+              id: response.dataValues.id,
               email: response.dataValues.email,
               password: response.dataValues.password,
               firstName: response.dataValues.firstName,
@@ -54,3 +56,5 @@ exports.registerAdmin = user =>
       }
     })
     .catch(errors.databaseError);
+
+exports.buyAlbum = album => Purchase.create(album).catch(errors.databaseError);
