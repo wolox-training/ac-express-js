@@ -13,6 +13,11 @@ exports.getPictures = req => {
     return fetch(url)
       .then(response => response.json())
       .catch(errors.defaultError);
+  } else if (req.params.id) {
+    const url = `${process.env.API}albums/${req.params.id}/photos?albumId=${req.params.id}`;
+    return fetch(url)
+      .then(response => response.json())
+      .catch(errors.defaultError);
   }
   throw errors.defaultError('Please, introduce a not empty album ID');
 };
