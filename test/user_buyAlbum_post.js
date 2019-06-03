@@ -2,6 +2,7 @@ const request = require('supertest');
 const dictum = require('dictum.js');
 
 const app = require('../app');
+const albums = require('../app/services/albums');
 const Purchase = require('../app/models').purchases;
 
 describe('POST /albums/:id', () => {
@@ -135,8 +136,9 @@ describe('POST /albums/:id', () => {
           )
       ));
 
-  it('test 06 : should be success because user could buy the album and it is unique', () =>
-    request(app)
+  it('test 06 : should be success because user could buy the album and it is unique', () => {
+    albums.getAlbums = jest.fn(() => [{ userId: '1', id: '1', title: 'abcd' }]);
+    return request(app)
       .post('/users')
       .send({
         firstName: 'Juan',
@@ -160,14 +162,17 @@ describe('POST /albums/:id', () => {
               .then(resp =>
                 Purchase.findOne({ where: { albumId: '1' } }).then(res => {
                   expect(res).not.toBeNull();
+                  expect(albums.getAlbums).toHaveBeenCalled();
                   dictum.chai(resp);
                 })
               )
           )
-      ));
+      );
+  });
 
-  it('test 07 : should be fail because user tried to buy twice the same album and it has to be unique', () =>
-    request(app)
+  it('test 07 : should be fail because user tried to buy twice the same album and it has to be unique', () => {
+    albums.getAlbums = jest.fn(() => [{ userId: '1', id: '1', title: 'abcd' }]);
+    return request(app)
       .post('/users')
       .send({
         firstName: 'Juan',
@@ -194,15 +199,23 @@ describe('POST /albums/:id', () => {
                   .send({})
                   .expect(200)
                   .then(resp => expect(resp.text).toMatch(/unique/))
-                  .then(() =>
-                    Purchase.findAll({ where: { albumId: '1' } }).then(res => expect(res).toHaveLength(1))
-                  )
+                  .then(() => {
+                    Purchase.findAll({ where: { albumId: '1' } }).then(res => {
+                      expect(albums.getAlbums).toHaveBeenCalled();
+                      expect(res).toHaveLength(1);
+                    });
+                  })
               )
           )
-      ));
+      );
+  });
 
-  it('test 08 : should be success because user bought two different albums.', () =>
-    request(app)
+  it('test 08 : should be success because user bought two different albums.', () => {
+    albums.getAlbums = jest
+      .fn(() => [{ userId: '1', id: '1', title: 'abcd' }])
+      .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }])
+      .mockImplementationOnce(() => [{ userId: '1', id: '2', title: 'abcd' }]);
+    return request(app)
       .post('/users')
       .send({
         firstName: 'Juan',
@@ -228,8 +241,14 @@ describe('POST /albums/:id', () => {
                   .set('Authorization', response.body.token)
                   .send({})
                   .expect(200)
-                  .then(() => Purchase.findAll().then(res => expect(res).toHaveLength(2)))
+                  .then(() =>
+                    Purchase.findAll().then(res => {
+                      expect(albums.getAlbums.mock.calls).toHaveLength(2);
+                      expect(res).toHaveLength(2);
+                    })
+                  )
               )
           )
-      ));
+      );
+  });
 });
