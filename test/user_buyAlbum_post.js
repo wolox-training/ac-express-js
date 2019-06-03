@@ -221,14 +221,14 @@ describe('POST /albums/:id', () => {
         firstName: 'Juan',
         lastName: 'Perez',
         email: 'juan124@wolox.com.ar',
-        password: '1234asdf65asd'
+        password: '1234asdf85asd'
       })
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
             email: 'juan124@wolox.com.ar',
-            password: '1234asdf65asd'
+            password: '1234asdf85asd'
           })
           .then(response =>
             request(app)
