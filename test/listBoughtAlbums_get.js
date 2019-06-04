@@ -1,4 +1,5 @@
 const request = require('supertest');
+const dictum = require('dictum.js');
 
 const app = require('../app');
 const albums = require('../app/services/albums');
@@ -87,7 +88,7 @@ describe('GET (controller and services) /users/:user_id/albums/', () => {
     albums.getAlbums = jest
       .fn(() => [{ userId: '1', id: '1', title: 'abcd' }])
       .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }])
-      .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }]);
+      .mockImplementationOnce(() => [{ userId: '1', id: '2', title: 'abcd' }]);
     return request(app)
       .post('/users')
       .send({
@@ -150,9 +151,10 @@ describe('GET (controller and services) /users/:user_id/albums/', () => {
                                     expect(res.body).toHaveLength(1);
                                   })
                                   .then(() =>
-                                    Purchase.findAll({ where: { albumId: '1' } }).then(resp =>
-                                      expect(resp).toHaveLength(1)
-                                    )
+                                    Purchase.findAll({ where: { albumId: '1' } }).then(resp => {
+                                      expect(resp).toHaveLength(1);
+                                      dictum.chai(respo);
+                                    })
                                   )
                               )
                           )

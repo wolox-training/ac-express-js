@@ -1,6 +1,7 @@
 const { param } = require('express-validator/check');
 
 const User = require('../models').users;
+const Purchase = require('../models').purchases;
 
 exports.userIdValidation = [
   param('user_id')
@@ -16,4 +17,17 @@ exports.adminUserPurchasesValidation = async (req, res, next) => {
     res.status(400).send("You do not have permissions to see other user's albums");
   }
   next();
+};
+
+exports.albumIdPhotosValidation = async (req, res, next) => {
+  const userlogged = parseInt(req.user.id);
+  const albumReq = parseInt(req.params.id);
+  const userAlbum = await Purchase.findOne({ where: { id: userlogged, albumId: albumReq } }).then(
+    resp => resp
+  );
+  if (userAlbum) {
+    next();
+  } else {
+    res.status(400).send('You did not buy this album.');
+  }
 };
