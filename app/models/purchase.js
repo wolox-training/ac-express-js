@@ -1,11 +1,8 @@
-// const User = require('.').users;
-
 module.exports = (sequelize, DataTypes) => {
   const Purchase = sequelize.define(
     'purchases',
     {
       albumId: {
-        unique: true,
         allowNull: false,
         type: DataTypes.INTEGER
       },
