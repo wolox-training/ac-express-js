@@ -5,7 +5,6 @@ module.exports = (sequelize, DataTypes) => {
     'purchases',
     {
       albumId: {
-        unique: true,
         allowNull: false,
         type: DataTypes.INTEGER
       },

@@ -75,3 +75,19 @@ exports.buyAlbum = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.listBoughtAlbums = async (req, res, next) => {
+  try {
+    const userId = req.params.user_id;
+    console.log(userId);
+    const albumsList = await usersService.listBoughtAlbums(userId);
+    // console.log(albumsList);
+    if (albumsList.length >= 1) {
+      res.status(200).send(albumsList);
+    } else {
+      res.status(200).send({ message: 'User does not have any purchase.' });
+    }
+  } catch (err) {
+    next(err);
+  }
+};

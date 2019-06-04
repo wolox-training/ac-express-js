@@ -7,6 +7,7 @@ const validationToken = require('./middlewares/tokenValidations');
 const validationNotAdmin = require('./middlewares/adminValidation');
 const validationPagination = require('./middlewares/paginationValidation');
 const validationAlbumId = require('./middlewares/albumIdValidation');
+const validationUserId = require('./middlewares/userIdValidation');
 const validation = require('./middlewares/validations');
 
 exports.init = app => {
@@ -35,8 +36,23 @@ exports.init = app => {
   );
   app.post(
     '/albums/:id',
-    [validationAlbumId.albumIdValidation, validation.validate.validations, validationToken.tokenValidation],
+    [
+      validationAlbumId.albumIdValidation,
+      validation.validate.validations,
+      validationToken.tokenValidation,
+      validationAlbumId.buyAnAlbumTwiceValidation
+    ],
     users.buyAlbum
+  );
+  app.get(
+    '/users/:user_id/albums',
+    [
+      validationUserId.userIdValidation,
+      validation.validate.validations,
+      validationToken.tokenValidation,
+      validationUserId.adminUserPurchasesValidation
+    ],
+    users.listBoughtAlbums
   );
   // app.get('/endpoint/get/path', [], controller.methodGET);
   // app.put('/endpoint/put/path', [], controller.methodPUT);

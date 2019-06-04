@@ -168,14 +168,14 @@ describe('/admin/users POST', () => {
       .send({
         firstName: 'Juan',
         lastName: 'Perez',
-        email: 'juan124@wolox.com.ar',
+        email: 'juan456adf54s6f5s465@wolox.com.ar',
         password: '1234asdf65asd'
       })
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan124@wolox.com.ar',
+            email: 'juan456adf54s6f5s465@wolox.com.ar',
             password: '1234asdf65asd'
           })
           .then(response =>
@@ -185,12 +185,12 @@ describe('/admin/users POST', () => {
               .send({
                 firstName: 'Juan',
                 lastName: 'Perez',
-                email: 'juan124@wolox.com.ar',
+                email: 'juan456adf54s6f5s465@wolox.com.ar',
                 password: '1234asdf65asd'
               })
               .expect(201)
               .then(resp =>
-                User.findOne({ where: { email: 'juan124@wolox.com.ar' } }).then(res => {
+                User.findOne({ where: { email: 'juan456adf54s6f5s465@wolox.com.ar' } }).then(res => {
                   expect(res.isAdmin).toBe(true);
                   dictum.chai(resp);
                 })

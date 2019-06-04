@@ -58,3 +58,14 @@ exports.registerAdmin = user =>
     .catch(errors.databaseError);
 
 exports.buyAlbum = album => Purchase.create(album).catch(errors.databaseError);
+// arreglar que se pueda comprar el mismo album si son usuarios
+
+exports.listBoughtAlbums = async userId => {
+  const user = await User.findOne({ where: { id: userId } }).then(res => res.dataValues);
+  if (user.isAdmin) {
+    return Purchase.findAll().catch(errors.databaseError);
+  }
+  return Purchase.findAll({
+    where: { id: user.id }
+  }).catch(errors.databaseError);
+};
