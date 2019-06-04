@@ -87,7 +87,7 @@ describe('GET (controller and services) /users/:user_id/albums/', () => {
     albums.getAlbums = jest
       .fn(() => [{ userId: '1', id: '1', title: 'abcd' }])
       .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }])
-      .mockImplementationOnce(() => [{ userId: '1', id: '2', title: 'abcd' }]);
+      .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }]);
     return request(app)
       .post('/users')
       .send({
