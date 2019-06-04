@@ -35,7 +35,12 @@ exports.init = app => {
   );
   app.post(
     '/albums/:id',
-    [validationAlbumId.albumIdValidation, validation.validate.validations, validationToken.tokenValidation],
+    [
+      validationAlbumId.albumIdValidation,
+      validation.validate.validations,
+      validationToken.tokenValidation,
+      validationAlbumId.buyAnAlbumTwiceValidation
+    ],
     users.buyAlbum
   );
   // app.get('/endpoint/get/path', [], controller.methodGET);

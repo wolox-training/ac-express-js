@@ -197,10 +197,10 @@ describe('POST /albums/:id', () => {
                   .post('/albums/1')
                   .set('Authorization', response.body.token)
                   .send({})
-                  .expect(200)
-                  .then(resp => expect(resp.text).toMatch(/unique/))
-                  .then(() => {
-                    Purchase.findAll({ where: { albumId: '1' } }).then(res => {
+                  .expect(400)
+                  .then(resp => {
+                    expect(resp.text).toMatch(/twice/);
+                    return Purchase.findAll({ where: { albumId: '1' } }).then(res => {
                       expect(albums.getAlbums).toHaveBeenCalled();
                       expect(res).toHaveLength(1);
                     });
