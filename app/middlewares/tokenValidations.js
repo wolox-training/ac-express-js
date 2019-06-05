@@ -11,26 +11,27 @@ exports.tokenValidation = async (req, res, next) => {
       token = token.slice(7);
     }
     if (token.length < 22) {
-      res.status(400).send('Bad Token');
-    } else {
-      tokenIsValid = jwt.verify(token, 'somethingSecretForTokens');
-      if (tokenIsValid) {
-        const userDecoded = jwt_decode(token);
-        const tokenHashDataBase = await User.findOne({ where: { email: userDecoded.email } }).then(
-          resp => resp.dataValues.hash
-        );
-        const tokenReqHash = userDecoded.hash;
-        if (tokenHashDataBase === tokenReqHash) {
-          req.user = userDecoded;
-          next();
-        } else {
-          res.status(400).send('Token is old.');
-        }
-      } else {
-        res.status(400).send('Bad Token');
-      }
+      return res.status(400).send('Bad Token');
     }
-  } else {
-    res.status(400).send('User Not Authorized');
+    try {
+      tokenIsValid = jwt.verify(token, 'somethingSecretForTokens');
+    } catch (err) {
+      return res.status(400).send('Bad Token');
+    }
+    if (tokenIsValid) {
+      const userDecoded = jwt_decode(token);
+      let tokenHashDataBase = await User.findOne({ where: { email: userDecoded.email } });
+      if (!tokenHashDataBase) {
+        tokenHashDataBase = tokenHashDataBase.dataValues.hash;
+      }
+      const tokenReqHash = userDecoded.hash;
+      if (tokenHashDataBase === tokenReqHash) {
+        req.user = userDecoded;
+        return next();
+      }
+      return res.status(400).send('Token is old.');
+    }
+    return res.status(400).send('Bad Token');
   }
+  return res.status(400).send('User Not Authorized');
 };
