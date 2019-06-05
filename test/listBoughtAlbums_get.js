@@ -152,8 +152,8 @@ describe('GET (controller and services) /users/:user_id/albums/', () => {
                                   })
                                   .then(() =>
                                     Purchase.findAll({ where: { albumId: '1' } }).then(resp => {
-                                      expect(resp).toHaveLength(1);
                                       dictum.chai(respo);
+                                      return expect(resp).toHaveLength(1);
                                     })
                                   )
                               )

@@ -30,6 +30,10 @@ module.exports = {
         allowNull: true,
         defaultValue: false,
         type: Sequelize.BOOLEAN
+      },
+      hash: {
+        defaultValue: null,
+        type: Sequelize.STRING
       }
     }),
   down: queryInterface => queryInterface.dropTable('users')

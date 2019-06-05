@@ -12,11 +12,11 @@ exports.register = async (req, res, next) => {
     const newUser = await usersService.register(body);
     logger.info(`${body.firstName} ${body.lastName} ${body.password}`);
     if (newUser.message && newUser.message.errors[0].message) {
-      res.status(400).send({ message: newUser.message.errors[0].message });
+      return res.status(400).send({ message: newUser.message.errors[0].message });
     }
-    res.status(201).send();
+    return res.status(201).send();
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -24,12 +24,11 @@ exports.signIn = async (req, res, next) => {
   try {
     const findUserToken = await usersService.findAndReturnToken(req.body);
     if (findUserToken) {
-      res.send({ token: findUserToken });
-    } else {
-      res.status(400).send({ message: 'User or password incorrect' });
+      return res.send({ token: findUserToken });
     }
+    return res.status(400).send({ message: 'User or password incorrect' });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -37,9 +36,9 @@ exports.list = async (req, res, next) => {
   try {
     const pages = req.query.limit;
     const listUsers = await usersService.list(pages);
-    res.send(listUsers);
+    return res.send(listUsers);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -49,9 +48,9 @@ exports.registerAdmin = async (req, res, next) => {
     const hash = bcrypt.hashSync(body.password, 10);
     body.password = hash;
     await usersService.registerAdmin(body);
-    res.status(201).send();
+    return res.status(201).send();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -67,12 +66,11 @@ exports.buyAlbum = async (req, res, next) => {
     };
     const newPurchase = await usersService.buyAlbum(purchasedAlbum);
     if (newPurchase) {
-      res.status(200).send(newPurchase);
-    } else {
-      res.status(404).send();
+      return res.status(200).send(newPurchase);
     }
+    return res.status(404).send();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -81,12 +79,11 @@ exports.listBoughtAlbums = async (req, res, next) => {
     const userId = req.params.user_id;
     const albumsList = await usersService.listBoughtAlbums(userId);
     if (albumsList.length >= 1) {
-      res.status(200).send(albumsList);
-    } else {
-      res.status(200).send({ message: 'User does not have any purchase.' });
+      return res.status(200).send(albumsList);
     }
+    return res.status(200).send({ message: 'User does not have any purchase.' });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -94,11 +91,22 @@ exports.listPhotosBoughtAlbums = async (req, res, next) => {
   try {
     const albumPhotos = await albumsService.getPictures(req);
     if (albumPhotos.length >= 1) {
-      res.status(200).send(albumPhotos);
-    } else {
-      res.status(200).send({ message: 'This album does not have any photos.' });
+      return res.status(200).send(albumPhotos);
     }
+    return res.status(200).send({ message: 'This album does not have any photos.' });
   } catch (err) {
-    next(err);
+    return next(err);
+  }
+};
+
+exports.invalidateSessions = async (req, res, next) => {
+  try {
+    const success = await usersService.invalidateSessions(req.user.id);
+    if (success) {
+      return res.status(200).send();
+    }
+    return res.status(400).send({ message: 'Session could not be invalidated.' });
+  } catch (err) {
+    return next(err);
   }
 };

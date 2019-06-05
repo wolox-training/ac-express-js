@@ -191,8 +191,8 @@ describe('/admin/users POST', () => {
               .expect(201)
               .then(resp =>
                 User.findOne({ where: { email: 'juan456adf54s6f5s465@wolox.com.ar' } }).then(res => {
-                  expect(res.isAdmin).toBe(true);
                   dictum.chai(resp);
+                  return expect(res.isAdmin).toBe(true);
                 })
               )
           )

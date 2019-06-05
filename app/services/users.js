@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const hashing = require('random-hash');
 
 const errors = require('../errors');
 const User = require('../models').users;
@@ -9,9 +10,10 @@ exports.register = user => User.create(user).catch(errors.databaseError);
 
 exports.findAndReturnToken = user =>
   User.findOne({ where: { email: user.email } })
-    .then(response => {
+    .then(async response => {
       if (response !== null) {
         const match = bcrypt.compareSync(user.password, response.dataValues.password);
+        const hashToken = hashing.generateHash({ length: 20 });
         if (match) {
           const token = jwt.sign(
             {
@@ -19,9 +21,13 @@ exports.findAndReturnToken = user =>
               email: response.dataValues.email,
               password: response.dataValues.password,
               firstName: response.dataValues.firstName,
-              lastName: response.dataValues.lastName
+              lastName: response.dataValues.lastName,
+              hash: hashToken
             },
             'somethingSecretForTokens'
+          );
+          await User.update({ hash: hashToken }, { where: { email: user.email } }).catch(
+            errors.databaseError
           );
           return token;
         }
@@ -50,15 +56,16 @@ exports.registerAdmin = user =>
       isAdmin: true
     }
   })
-    .then(register => {
+    .then(async register => {
       if (!register[1]) {
-        User.update({ isAdmin: true }, { where: { email: register[0].email } });
+        await User.update({ isAdmin: true }, { where: { email: register[0].email } }).catch(
+          errors.databaseError
+        );
       }
     })
     .catch(errors.databaseError);
 
 exports.buyAlbum = album => Purchase.create(album).catch(errors.databaseError);
-// arreglar que se pueda comprar el mismo album si son usuarios
 
 exports.listBoughtAlbums = async userId => {
   const user = await User.findOne({ where: { id: userId } }).then(res => res.dataValues);
@@ -68,4 +75,11 @@ exports.listBoughtAlbums = async userId => {
   return Purchase.findAll({
     where: { id: user.id }
   }).catch(errors.databaseError);
+};
+
+exports.invalidateSessions = userId => {
+  const newHash = hashing.generateHash({ length: 20 });
+  return User.update({ hash: newHash }, { where: { id: userId } }).catch(err => {
+    throw errors.databaseError(err);
+  });
 };

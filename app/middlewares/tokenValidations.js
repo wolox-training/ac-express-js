@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
 const jwt_decode = require('jwt-decode');
 
-exports.tokenValidation = (req, res, next) => {
+const User = require('../models').users;
+
+exports.tokenValidation = async (req, res, next) => {
+  let tokenIsValid = false;
   if (req.headers.authorization) {
     let token = req.headers.authorization;
     if (token.startsWith('Bearer')) {
@@ -9,13 +12,23 @@ exports.tokenValidation = (req, res, next) => {
     }
     if (token.length < 22) {
       res.status(400).send('Bad Token');
-    }
-    const tokenIsValid = jwt.verify(token, 'somethingSecretForTokens');
-    if (tokenIsValid) {
-      req.user = jwt_decode(token);
-      next();
     } else {
-      res.status(400).send('Bad Token');
+      tokenIsValid = jwt.verify(token, 'somethingSecretForTokens');
+      if (tokenIsValid) {
+        const userDecoded = jwt_decode(token);
+        const tokenHashDataBase = await User.findOne({ where: { email: userDecoded.email } }).then(
+          resp => resp.dataValues.hash
+        );
+        const tokenReqHash = userDecoded.hash;
+        if (tokenHashDataBase === tokenReqHash) {
+          req.user = userDecoded;
+          next();
+        } else {
+          res.status(400).send('Token is old.');
+        }
+      } else {
+        res.status(400).send('Bad Token');
+      }
     }
   } else {
     res.status(400).send('User Not Authorized');

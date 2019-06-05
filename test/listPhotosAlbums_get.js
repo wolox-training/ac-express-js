@@ -191,12 +191,10 @@ describe('GET /users/albums/:id/photos', () => {
                                   .then(res => {
                                     expect(albums.getAlbums).toHaveBeenCalled();
                                     expect(res.text).toMatch(/did not buy/);
-                                  })
-                                  .then(() =>
-                                    Purchase.findAll({ where: { albumId: '1' } }).then(resp =>
+                                    return Purchase.findAll({ where: { albumId: '1' } }).then(resp =>
                                       expect(resp).toHaveLength(1)
-                                    )
-                                  )
+                                    );
+                                  })
                               )
                           )
                       )
@@ -282,13 +280,11 @@ describe('GET /users/albums/:id/photos', () => {
                     expect(albums.getAlbums).toHaveBeenCalled();
                     expect(albums.getPictures).toHaveBeenCalled();
                     expect(res.body).toHaveLength(1);
-                  })
-                  .then(() =>
-                    Purchase.findAll({ where: { albumId: '1' } }).then(resp => {
+                    return Purchase.findAll({ where: { albumId: '1' } }).then(resp => {
                       expect(resp).toHaveLength(1);
                       dictum.chai(response);
-                    })
-                  )
+                    });
+                  })
               )
           )
       );

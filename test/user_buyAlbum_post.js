@@ -8,28 +8,18 @@ const Purchase = require('../app/models').purchases;
 describe('POST /albums/:id', () => {
   it('test 01 : should be fail buy an album because token is incorrect', () =>
     request(app)
-      .post('/users')
+      .post('/users/sessions')
       .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
         email: 'juan11@wolox.com.ar',
         password: '1234asdf65asd'
       })
       .then(() =>
         request(app)
-          .post('/users/sessions')
-          .send({
-            email: 'juan11@wolox.com.ar',
-            password: '1234asdf65asd'
-          })
-          .then(() =>
-            request(app)
-              .post('/albums/45')
-              .set('Authorization', '654654654654')
-              .send({})
-              .expect(400)
-              .then(response => expect(response.text).toMatch(/Bad Token/))
-          )
+          .post('/albums/45')
+          .set('Authorization', '654654654654')
+          .send({})
+          .expect(400)
+          .then(response => expect(response.text).toMatch(/Bad Token/))
       ));
 
   it('test 02 : should be fail buy an album because token field is empty', () =>
@@ -60,28 +50,18 @@ describe('POST /albums/:id', () => {
 
   it('test 03 : should be fail buy an album because token field has less than 22 characters', () =>
     request(app)
-      .post('/users')
+      .post('/users/sessions')
       .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
         email: 'juan1asdasd23@wolox.com.ar',
         password: '1234asdf65asd'
       })
       .then(() =>
         request(app)
-          .post('/users/sessions')
-          .send({
-            email: 'juan1asdasd23@wolox.com.ar',
-            password: '1234asdf65asd'
-          })
-          .then(() =>
-            request(app)
-              .post('/albums/23')
-              .set('Authorization', '565')
-              .send({})
-              .expect(400)
-              .then(response => expect(response.text).toMatch(/Bad Token/))
-          )
+          .post('/albums/23')
+          .set('Authorization', '565')
+          .send({})
+          .expect(400)
+          .then(response => expect(response.text).toMatch(/Bad Token/))
       ));
 
   it('test 04 : should be fail buy an album because album Id is less than 1', () =>
@@ -246,6 +226,65 @@ describe('POST /albums/:id', () => {
                       expect(albums.getAlbums.mock.calls).toHaveLength(2);
                       expect(res).toHaveLength(2);
                     })
+                  )
+              )
+          )
+      );
+  });
+
+  it('test 09 : should be success because two different users can buy the same album', () => {
+    albums.getAlbums = jest
+      .fn(() => [{ userId: '1', id: '1', title: 'abcd' }])
+      .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }])
+      .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }]);
+    return request(app)
+      .post('/users')
+      .send({
+        firstName: 'Juan',
+        lastName: 'Perez',
+        email: 'juan124@wolox.com.ar',
+        password: '1234asdf65asd'
+      })
+      .then(() =>
+        request(app)
+          .post('/users/sessions')
+          .send({
+            email: 'juan124@wolox.com.ar',
+            password: '1234asdf65asd'
+          })
+          .then(response =>
+            request(app)
+              .post('/albums/1')
+              .set('Authorization', response.body.token)
+              .send({})
+              .then(() =>
+                request(app)
+                  .post('/users')
+                  .send({
+                    firstName: 'teresa',
+                    lastName: 'teresa',
+                    email: 'teresa@wolox.com.ar',
+                    password: '1234asdf65asd'
+                  })
+                  .then(() =>
+                    request(app)
+                      .post('/users/sessions')
+                      .send({
+                        email: 'teresa@wolox.com.ar',
+                        password: '1234asdf65asd'
+                      })
+                      .then(respo =>
+                        request(app)
+                          .post('/albums/1')
+                          .set('Authorization', respo.body.token)
+                          .send({})
+                          .expect(200)
+                          .then(() =>
+                            Purchase.findAll({ where: { albumId: 1 } }).then(resp =>
+                              expect(resp).toHaveLength(2)
+                            )
+                          )
+                      )
                   )
               )
           )
