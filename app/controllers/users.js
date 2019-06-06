@@ -15,6 +15,7 @@ exports.register = async (req, res, next) => {
     if (newUser.message && newUser.message.errors[0].message) {
       return res.status(400).send({ message: newUser.message.errors[0].message });
     }
+    await usersService.sendEmail(req, res);
     return res.status(201).send();
   } catch (error) {
     return next(error);

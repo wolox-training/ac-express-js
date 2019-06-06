@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const hashing = require('random-hash');
+const nodemailer = require('nodemailer');
 
 const errors = require('../errors');
 const User = require('../models').users;
@@ -82,5 +83,34 @@ exports.invalidateSessions = userId => {
   const newHash = hashing.generateHash({ length: 20 });
   return User.update({ hash: newHash }, { where: { id: userId } }).catch(err => {
     throw errors.databaseError(err);
+  });
+};
+
+exports.sendEmail = (req, res) => {
+  const { firstName } = req.body;
+  const { lastName } = req.body;
+  const { email } = req.body;
+  const from = 'andrea.celtich@wolox.com';
+  const message = `Welcome ${firstName} ${lastName}!`;
+  const to = email;
+  const smtpTransport = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: 'woloxappceltich@gmail.com',
+      pass: 'wolox1189'
+    }
+  });
+  const mailOptions = {
+    from,
+    to,
+    subject: `${firstName} | Welcome!`,
+    text: message
+  };
+  smtpTransport.sendMail(mailOptions, error => {
+    if (error) {
+      console.log(error);
+    } else {
+      res.redirect('/');
+    }
   });
 };
