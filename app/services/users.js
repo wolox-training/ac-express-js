@@ -24,7 +24,8 @@ exports.findAndReturnToken = user =>
               lastName: response.dataValues.lastName,
               hash: hashToken
             },
-            'somethingSecretForTokens'
+            'somethingSecretForTokens',
+            { expiresIn: 320 }
           );
           await User.update({ hash: hashToken }, { where: { email: user.email } }).catch(
             errors.databaseError

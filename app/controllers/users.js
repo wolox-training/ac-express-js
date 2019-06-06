@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const jwt_decode = require('jwt-decode');
 
 const usersService = require('../services/users');
 const albumsService = require('../services/albums');
@@ -24,7 +25,9 @@ exports.signIn = async (req, res, next) => {
   try {
     const findUserToken = await usersService.findAndReturnToken(req.body);
     if (findUserToken) {
-      return res.send({ token: findUserToken });
+      const token = jwt_decode(findUserToken);
+      const tokenExpiration = token.exp - token.iat;
+      return res.send({ token: findUserToken, timeExpiration: tokenExpiration });
     }
     return res.status(400).send({ message: 'User or password incorrect' });
   } catch (err) {

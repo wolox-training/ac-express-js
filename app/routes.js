@@ -64,6 +64,8 @@ exports.init = app => {
     ],
     users.listPhotosBoughtAlbums
   );
+  app.post('/users/sessions/invalidate_all', [validationToken.tokenValidation], users.invalidateSessions);
+
   // app.get('/endpoint/get/path', [], controller.methodGET);
   // app.put('/endpoint/put/path', [], controller.methodPUT);
   // app.post('/endpoint/post/path', [], controller.methodPOST);
