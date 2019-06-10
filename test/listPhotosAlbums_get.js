@@ -1,5 +1,6 @@
 const request = require('supertest');
 const dictum = require('dictum.js');
+const { factory } = require('factory-girl');
 
 const app = require('../app');
 const albums = require('../app/services/albums');
@@ -31,21 +32,17 @@ describe('GET /users/albums/:id/photos', () => {
       .expect(400)
       .then(response => expect(response.text).toMatch(/Bad Token/)));
 
-  it("test 04 : should be fail list album's photos because user Id is less than 1", () =>
-    request(app)
+  it("test 04 : should be fail list album's photos because user Id is less than 1", async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan1asdasd23@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan1asdasd23@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -55,23 +52,20 @@ describe('GET /users/albums/:id/photos', () => {
               .expect(400)
               .then(res => expect(res.text).toMatch(/between 1 and 100/))
           )
-      ));
+      );
+  });
 
-  it("test 05 : should be fail list album's photos because user is not registered", () =>
-    request(app)
+  it("test 05 : should be fail list album's photos because user is not registered", async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan1asdasd23@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan1asdasd23@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -81,9 +75,10 @@ describe('GET /users/albums/:id/photos', () => {
               .expect(400)
               .then(res => expect(res.text).toMatch(/between 1 and 100/))
           )
-      ));
+      );
+  });
 
-  it("test 06 : should be fail list album's photos because regular user did not buy that album", () => {
+  it("test 06 : should be fail list album's photos because regular user did not buy that album", async () => {
     albums.getPictures = jest.fn(() => [
       {
         albumId: 1,
@@ -94,20 +89,16 @@ describe('GET /users/albums/:id/photos', () => {
       }
     ]);
     albums.getAlbums = jest.fn(() => [{ userId: '1', id: '1', title: 'abcd' }]);
+    const userNew = await factory.build('User').then(user => user);
     return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan56456546@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan56456546@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -126,25 +117,22 @@ describe('GET /users/albums/:id/photos', () => {
       );
   });
 
-  it("test 07 : should be fail list album's photos because admin user did not buy album that regular did", () => {
+  it("test 07 : should be fail list album's photos because admin user did not buy album that regular did", async () => {
     albums.getAlbums = jest
       .fn(() => [{ userId: '1', id: '1', title: 'abcd' }])
       .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }])
       .mockImplementationOnce(() => [{ userId: '1', id: '2', title: 'abcd' }]);
+    const userNew = await factory.build('User').then(user => user);
+    const userAdmin = await factory.build('User').then(user => user);
     return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan124@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan124@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -154,29 +142,19 @@ describe('GET /users/albums/:id/photos', () => {
               .then(() =>
                 request(app)
                   .post('/users')
-                  .send({
-                    firstName: 'admin',
-                    lastName: 'admin',
-                    email: 'admin@wolox.com.ar',
-                    password: '1234asdf65asd'
-                  })
+                  .send(userAdmin.dataValues)
                   .then(() =>
                     request(app)
                       .post('/users/sessions')
                       .send({
-                        email: 'admin@wolox.com.ar',
-                        password: '1234asdf65asd'
+                        email: userAdmin.dataValues.email,
+                        password: userAdmin.dataValues.password
                       })
                       .then(respo =>
                         request(app)
                           .post('/admin/users')
                           .set('Authorization', respo.body.token)
-                          .send({
-                            firstName: 'admin',
-                            lastName: 'admin',
-                            email: 'admin@wolox.com.ar',
-                            password: '1234asdf65asd'
-                          })
+                          .send(userAdmin.dataValues)
                           .then(() =>
                             request(app)
                               .post('/albums/2')
@@ -204,23 +182,19 @@ describe('GET /users/albums/:id/photos', () => {
       );
   });
 
-  it("test 08 : should be fail list album's photos because album does not have any photos", () => {
+  it("test 08 : should be fail list album's photos because album does not have any photos", async () => {
     albums.getAlbums = jest.fn(() => [{ userId: '1', id: '1', title: 'abcd' }]);
     albums.getPictures = jest.fn(() => []);
+    const userNew = await factory.build('User').then(user => user);
     return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juansdf564d@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juansdf564d@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -239,7 +213,7 @@ describe('GET /users/albums/:id/photos', () => {
       );
   });
 
-  it("test 09 : should be success list album's photos because user bought that album", () => {
+  it("test 09 : should be success list album's photos because user bought that album", async () => {
     albums.getAlbums = jest.fn(() => [{ userId: '1', id: '1', title: 'abcd' }]);
     albums.getPictures = jest.fn(() => [
       {
@@ -250,20 +224,16 @@ describe('GET /users/albums/:id/photos', () => {
         thumbnailUrl: 'https://via.placeholder.com/150/250289'
       }
     ]);
+    const userNew = await factory.build('User').then(user => user);
     return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juansdf564d@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juansdf564d@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)

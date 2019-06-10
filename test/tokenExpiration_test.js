@@ -1,30 +1,28 @@
 const request = require('supertest');
 const dictum = require('dictum.js');
+const { factory } = require('factory-girl');
 
 const app = require('../app');
 
 describe('/users/sessions POST', () => {
-  it("test 01 : should be success because the token's expiration time is ok", () =>
-    request(app)
+  it("test 01 : should be success because the token's expiration time is ok", async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juanrepeatedasdasd@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juanrepeatedasdasd@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .expect(200)
           .then(response => {
             expect(response.body.timeExpiration).toBe(320);
           })
-      ));
+      );
+  });
 
   it('test 02 : should be fail get the list of users because token has expired', () =>
     request(app)
@@ -60,21 +58,17 @@ describe('/users/sessions POST', () => {
           )
       ));
 
-  it('test 03 : should be success get the list of users because token has not expired yet', () =>
-    request(app)
+  it('test 03 : should be success get the list of users because token has not expired yet', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'noadmin',
-        lastName: 'Perez',
-        email: 'noaqweaasfsdfsdsadaasaadmain@wolox.com.ar',
-        password: '12404asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'noaqweaasfsdfsdsadaasaadmain@wolox.com.ar',
-            password: '12404asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -84,7 +78,8 @@ describe('/users/sessions POST', () => {
               .expect(200)
               .then(res => expect(res.body).toHaveLength(1))
           )
-      ));
+      );
+  });
 
   it('test 04 : should be success because token has expired but user log in again with a longer exp time', () =>
     request(app)

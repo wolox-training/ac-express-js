@@ -1,5 +1,6 @@
 const request = require('supertest');
 const dictum = require('dictum.js');
+const { factory } = require('factory-girl');
 
 const app = require('../app');
 
@@ -52,66 +53,58 @@ describe('/users/sessions POST', () => {
       .expect(400)
       .then(response => expect(response.body.message).toMatch(/password/)));
 
-  it('test 06 : should be fail sign in because email is not registered on database', () =>
-    request(app)
+  it('test 06 : should be fail sign in because email is not registered on database', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    const userAnother = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juanregistered1@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juanrisnotregistered@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userAnother.dataValues.email,
+            password: userAnother.dataValues.password
           })
           .expect(400)
           .then(response => expect(response.text).toMatch(/User or password incorrect/))
-      ));
+      );
+  });
 
-  it('test 07 : should be fail sign in an user because password is not ok', () =>
-    request(app)
+  it('test 07 : should be fail sign in an user because password is not ok', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juanregistered2@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juanregistered2@wolox.com.ar',
-            password: '999999999999incorrectpass'
+            email: userNew.dataValues.email,
+            password: 'asdfafdsa5323453'
           })
           .expect(400)
           .then(response => expect(response.text).toMatch(/User or password incorrect/))
-      ));
+      );
+  });
 
-  it('test 08 : should be success sign in because user is registered and email and password are ok', () =>
-    request(app)
+  it('test 08 : should be success sign in because user is registered and email and password are ok', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juanrepeatedasdasd@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juanrepeatedasdasd@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .expect(200)
           .then(response => {
             expect(response.body.token.length).toBeGreaterThanOrEqual(22);
             dictum.chai(response);
           })
-      ));
+      );
+  });
 });

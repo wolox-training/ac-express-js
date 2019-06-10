@@ -1,17 +1,19 @@
 const request = require('supertest');
 const dictum = require('dictum.js');
+const { factory } = require('factory-girl');
 
 const app = require('../app');
 const albums = require('../app/services/albums');
 const Purchase = require('../app/models').purchases;
 
 describe('POST /albums/:id', () => {
-  it('test 01 : should be fail buy an album because token is incorrect', () =>
-    request(app)
+  it('test 01 : should be fail buy an album because token is incorrect', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users/sessions')
       .send({
-        email: 'juan11@wolox.com.ar',
-        password: '1234asdf65asd'
+        email: userNew.dataValues.email,
+        password: userNew.dataValues.password
       })
       .then(() =>
         request(app)
@@ -20,23 +22,20 @@ describe('POST /albums/:id', () => {
           .send({})
           .expect(400)
           .then(response => expect(response.text).toMatch(/Bad Token/))
-      ));
+      );
+  });
 
-  it('test 02 : should be fail buy an album because token field is empty', () =>
-    request(app)
+  it('test 02 : should be fail buy an album because token field is empty', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan123@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan123@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(() =>
             request(app)
@@ -46,14 +45,16 @@ describe('POST /albums/:id', () => {
               .expect(400)
               .then(response => expect(response.text).toMatch(/Authorized/))
           )
-      ));
+      );
+  });
 
-  it('test 03 : should be fail buy an album because token field has less than 22 characters', () =>
-    request(app)
+  it('test 03 : should be fail buy an album because token field has less than 22 characters', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users/sessions')
       .send({
-        email: 'juan1asdasd23@wolox.com.ar',
-        password: '1234asdf65asd'
+        email: userNew.dataValues.email,
+        password: userNew.dataValues.password
       })
       .then(() =>
         request(app)
@@ -62,23 +63,20 @@ describe('POST /albums/:id', () => {
           .send({})
           .expect(400)
           .then(response => expect(response.text).toMatch(/Bad Token/))
-      ));
+      );
+  });
 
-  it('test 04 : should be fail buy an album because album Id is less than 1', () =>
-    request(app)
+  it('test 04 : should be fail buy an album because album Id is less than 1', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan1asdasd23@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan1asdasd23@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -88,23 +86,20 @@ describe('POST /albums/:id', () => {
               .expect(400)
               .then(res => expect(res.text).toMatch(/between 1 and 100/))
           )
-      ));
+      );
+  });
 
-  it('test 05 : should be fail buy an album because album Id is greater than 100', () =>
-    request(app)
+  it('test 05 : should be fail buy an album because album Id is greater than 100', async () => {
+    const userNew = await factory.build('User').then(user => user);
+    return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan1asdasd23@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan1asdasd23@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -114,24 +109,21 @@ describe('POST /albums/:id', () => {
               .expect(400)
               .then(res => expect(res.text).toMatch(/between 1 and 100/))
           )
-      ));
+      );
+  });
 
-  it('test 06 : should be success because user could buy the album and it is unique', () => {
+  it('test 06 : should be success because user could buy the album and it is unique', async () => {
     albums.getAlbums = jest.fn(() => [{ userId: '1', id: '1', title: 'abcd' }]);
+    const userNew = await factory.build('User').then(user => user);
     return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan124@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan124@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -150,22 +142,18 @@ describe('POST /albums/:id', () => {
       );
   });
 
-  it('test 07 : should be fail because user tried to buy twice the same album and it has to be unique', () => {
+  it('test 07 : should be fail because user tried to buy twice the same album and it has to be unique', async () => {
     albums.getAlbums = jest.fn(() => [{ userId: '1', id: '1', title: 'abcd' }]);
+    const userNew = await factory.build('User').then(user => user);
     return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan124@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan124@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -190,25 +178,21 @@ describe('POST /albums/:id', () => {
       );
   });
 
-  it('test 08 : should be success because user bought two different albums.', () => {
+  it('test 08 : should be success because user bought two different albums.', async () => {
     albums.getAlbums = jest
       .fn(() => [{ userId: '1', id: '1', title: 'abcd' }])
       .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }])
       .mockImplementationOnce(() => [{ userId: '1', id: '2', title: 'abcd' }]);
+    const userNew = await factory.build('User').then(user => user);
     return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan124@wolox.com.ar',
-        password: '1234asdf85asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan124@wolox.com.ar',
-            password: '1234asdf85asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -232,25 +216,22 @@ describe('POST /albums/:id', () => {
       );
   });
 
-  it('test 09 : should be success because two different users can buy the same album', () => {
+  it('test 09 : should be success because two different users can buy the same album', async () => {
     albums.getAlbums = jest
       .fn(() => [{ userId: '1', id: '1', title: 'abcd' }])
       .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }])
       .mockImplementationOnce(() => [{ userId: '1', id: '1', title: 'abcd' }]);
+    const userNew = await factory.build('User').then(user => user);
+    const userTwo = await factory.build('User').then(user => user);
     return request(app)
       .post('/users')
-      .send({
-        firstName: 'Juan',
-        lastName: 'Perez',
-        email: 'juan124@wolox.com.ar',
-        password: '1234asdf65asd'
-      })
+      .send(userNew.dataValues)
       .then(() =>
         request(app)
           .post('/users/sessions')
           .send({
-            email: 'juan124@wolox.com.ar',
-            password: '1234asdf65asd'
+            email: userNew.dataValues.email,
+            password: userNew.dataValues.password
           })
           .then(response =>
             request(app)
@@ -260,18 +241,13 @@ describe('POST /albums/:id', () => {
               .then(() =>
                 request(app)
                   .post('/users')
-                  .send({
-                    firstName: 'teresa',
-                    lastName: 'teresa',
-                    email: 'teresa@wolox.com.ar',
-                    password: '1234asdf65asd'
-                  })
+                  .send(userTwo.dataValues)
                   .then(() =>
                     request(app)
                       .post('/users/sessions')
                       .send({
-                        email: 'teresa@wolox.com.ar',
-                        password: '1234asdf65asd'
+                        email: userTwo.dataValues.email,
+                        password: userTwo.dataValues.password
                       })
                       .then(respo =>
                         request(app)

@@ -23,12 +23,9 @@ exports.tokenValidation = async (req, res, next) => {
     }
     if (tokenIsValid) {
       const userDecoded = jwt_decode(token);
-      const tokenHashDataBase = await User.findOne({ where: { email: userDecoded.email } }).then(resp => {
-        if (resp) {
-          return resp.dataValues.hash;
-        }
-        return null;
-      });
+      const tokenHashDataBase = await User.findOne({ where: { email: userDecoded.email } }).then(
+        resp => resp && resp.dataValues.hash
+      );
       if (!tokenHashDataBase) {
         return res.status(400).send('User is not registered.');
       }
